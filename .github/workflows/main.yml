@@ -1,0 +1,24 @@
+name: Docker React CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout repo
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Build Docker image
+      - name: Build Docker image
+        run: docker build -t abubakar/docker-react -f Dockerfile.dev .
+
+      # Step 3: Run tests inside Docker
+      - name: Run tests
+        run: docker run -e CI=true abubakar/docker-react npm run test
