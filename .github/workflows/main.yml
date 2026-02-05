@@ -13,19 +13,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Build Docker image
+      # 2. Set up Node.js (optional, if you need npm)
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # 3. Build Docker image
       - name: Build Docker image
         run: docker build -t abubakar/docker-react -f Dockerfile.dev .
 
-      # 3. Run tests inside Docker
+      # 4. Run tests inside Docker
       - name: Run tests
         run: docker run -e CI=true abubakar/docker-react npm run test
 
-      # 4. Generate deployment package
+      # 5. Generate deployment package (exclude unnecessary files)
       - name: Generate deployment package
-        run: zip -r deploy.zip . -x "*.git*"
+        run: zip -r deploy.zip . -x "*.git*" "node_modules/*"
 
-      # 5. Deploy to Elastic Beanstalk
+      # 6. Deploy to Elastic Beanstalk
       - name: Deploy to Elastic Beanstalk
         uses: einaregilsson/beanstalk-deploy@v21
         with:
@@ -35,3 +41,6 @@ jobs:
           environment_name: Frontend-env
           region: eu-north-1
           deployment_package: deploy.zip
+          version_label: v-${{ github.run_number }}-${{ github.sha }}
+          wait_for_deployment: true
+          recovery_wait_time: 30
